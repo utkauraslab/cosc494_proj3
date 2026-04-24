@@ -1,0 +1,41 @@
+# Parameters for your particle filter
+
+particle_filter:
+  ros__parameters:
+    motion_params:
+      vel_std:    0.01
+      delta_std:  0.02
+      x_std:      0.6
+      y_std:      0.6
+      theta_std:  0.4
+
+    sensor_params:
+      hit_std: 0.5
+      z_hit: 0.8
+      z_short: 0.05
+      z_max: 0.05
+      z_rand: 0.1
+
+    publish_tf: true
+    tf_prefix: ""
+    n_particles: 500
+    n_viz_particles: 100
+    kinematics.car_length: 0.33
+
+    laser_ray_step: 20
+    exclude_max_range_rays: false
+    max_range_meters: 10.0
+
+    vesc.speed_to_erpm_offset: 0.0
+    vesc.speed_to_erpm_gain: 4350.0
+    vesc.steering_angle_to_servo_offset: 0.500
+    vesc.steering_angle_to_servo_gain: -1.2135
+
+    use_map_topic: false
+    motor_state_topic: "/utk_car/sensors/core"
+    servo_state_topic: "/utk_car/sensors/servo_position_command"
+    scan_topic: "/utk_car/scan"
+
+    initial_x: 0.0
+    initial_y: 0.0
+    initial_theta: 0.0

@@ -1,0 +1,23 @@
+# Parameters for your controller
+
+control_node:
+  ros__parameters:
+
+    type: pid
+
+    frequency: 50.0
+    finish_threshold: 0.3
+    exceed_threshold: 4.0
+    distance_lookahead: 0.6
+    min_speed: 0.5
+    car_length: 0.33
+
+    pid:
+      kp: 0.5
+      kd: 0.5
+    pp:
+      distance_lookahead: 0.1
+      car_length: 0.33
+    mpc:
+      K: 2
+      T: 1
