@@ -19,6 +19,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from proj3.base_controller import time_parameterize_ramp_up_ramp_down
 from proj3.pid import PIDController
 from proj3.purepursuit import PurePursuitController
+from proj3.mpc import ModelPredictiveController
 from control_interfaces.srv import FollowPath
 from proj3 import utils
 
@@ -26,6 +27,7 @@ from proj3 import utils
 controllers = {
     "pid": PIDController,
     "pp": PurePursuitController,
+    "mpc": ModelPredictiveController,
 }
 
 
@@ -312,9 +314,35 @@ def get_ros_params(node):
         "min_speed": float(node.get_parameter_or("pp.min_speed", base_params["min_speed"])),
         "car_length": float(node.get_parameter_or("pp.car_length", base_params["car_length"])),
     }
+  elif controller_type == "mpc":
+    params = {
+        "car_width": float(node.get_parameter_or("mpc.car_width", 0.15)),
+        "collision_w": float(node.get_parameter_or("mpc.collision_w", 1e5)),
+        "error_w": float(node.get_parameter_or("mpc.error_w", 1.0)),
+        "min_delta": float(node.get_parameter_or("mpc.min_delta", -0.34)),
+        "max_delta": float(node.get_parameter_or("mpc.max_delta", 0.34)),
+        "K": int(node.get_parameter_or("mpc.K", 2)),
+        "T": int(node.get_parameter_or("mpc.T", 1)),
+        "frequency": float(node.get_parameter_or("mpc.frequency", base_params["frequency"])),
+        "finish_threshold": float(node.get_parameter_or("mpc.finish_threshold", base_params["finish_threshold"])),
+        "exceed_threshold": float(node.get_parameter_or("mpc.exceed_threshold", base_params["exceed_threshold"])),
+        "distance_lookahead": float(node.get_parameter_or("mpc.distance_lookahead", base_params["distance_lookahead"])),
+        "min_speed": float(node.get_parameter_or("mpc.min_speed", base_params["min_speed"])),
+        "car_length": float(node.get_parameter_or("mpc.car_length", base_params["car_length"])),
+        "kinematics_params": {
+            "vel_std": float(node.get_parameter_or("motion_params.vel_std", 0.0)),
+            "delta_std": float(node.get_parameter_or("motion_params.delta_std", 0.0)),
+            "x_std": float(node.get_parameter_or("motion_params.x_std", 0.0)),
+            "y_std": float(node.get_parameter_or("motion_params.y_std", 0.0)),
+            "theta_std": float(node.get_parameter_or("motion_params.theta_std", 0.0)),
+        },
+    }
+    permissible_region, map_info = utils.get_map("/static_map")
+    params["permissible_region"] = permissible_region
+    params["map_info"] = map_info
   else:
     raise RuntimeError(
-        f"'{controller_type}' is not a controller. You must specify 'pid' or 'pp'"
+        f"'{controller_type}' is not a controller. You must specify 'pid', 'pp', or 'mpc'"
     )
 
   merged_params = base_params.copy()

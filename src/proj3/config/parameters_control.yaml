@@ -21,3 +21,15 @@ control_node:
     mpc:
       K: 2
       T: 1
+      car_width: 0.15
+      collision_w: 100000.0
+      error_w: 1.0
+      min_delta: -0.34
+      max_delta: 0.34
+
+    motion_params:
+      vel_std: 0.0
+      delta_std: 0.0
+      x_std: 0.0
+      y_std: 0.0
+      theta_std: 0.0
