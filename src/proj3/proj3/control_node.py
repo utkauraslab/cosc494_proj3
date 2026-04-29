@@ -9,33 +9,22 @@ from .control_ros2 import ControlROS, get_ros_params, controllers
 def main(args=None):
   rclpy.init(args=args)
 
-  param_node = rclpy.create_node("control_param_loader")
-  controller_type, params = get_ros_params(param_node)
-  param_node.get_logger().info(f"Using {controller_type} controller")
+  node = ControlROS(controller=None, node_name="control_node")
+
+  controller_type, params = get_ros_params(node)
+  node.get_logger().info(f"Using {controller_type} controller")
 
   controller = controllers[controller_type](**params)
-  node = ControlROS(controller)
+  node.controller = controller
 
   node.start()
 
-  executor = MultiThreadedExecutor()
-  executor.add_node(node)
-  executor.add_node(controller)
-
   try:
-    executor.spin()
+    rclpy.spin(node)
   except KeyboardInterrupt:
     pass
   finally:
     node.shutdown()
-    executor.remove_node(node)
-    executor.remove_node(controller)
-
-    node.destroy_node()
     controller.destroy_node()
-    param_node.destroy_node()
+    node.destroy_node()
     rclpy.shutdown()
-
-
-if __name__ == "__main__":
-  main()

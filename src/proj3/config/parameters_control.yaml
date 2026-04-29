@@ -13,7 +13,7 @@ control_node:
     car_length: 0.33
 
     pid:
-      kp: 0.5
+      kp: 0.8
       kd: 0.5
     pp:
       distance_lookahead: 0.1

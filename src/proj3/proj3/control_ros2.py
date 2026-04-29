@@ -260,22 +260,14 @@ class ControlROS(Node):
       return None
 
 
-def override_param(node, param_store, param_name, param_type, default="UNSPECIFIED"):
-  """Set the param value that will override the base param value."""
-  key_name = param_name.split(".")[-1]
-
-  if not node.has_parameter(param_name):
-    node.declare_parameter(param_name)
-
-  value = node.get_parameter(param_name).value
-  if value is not None:
-    param_store[key_name] = param_type(value)
-  elif default != "UNSPECIFIED":
-    param_store[key_name] = default
+def declare_if_needed(node, name, default):
+  if not node.has_parameter(name):
+    node.declare_parameter(name, default)
 
 
 def get_ros_params(node):
   """Pull controller parameters from ROS2 parameters."""
+
   defaults = [
       ("car_length", 0.33),
       ("frequency", 50.0),
@@ -284,10 +276,40 @@ def get_ros_params(node):
       ("distance_lookahead", 0.6),
       ("min_speed", 0.5),
       ("type", "pid"),
+
+      ("pid.kp", 0.5),
+      ("pid.kd", 0.5),
+
+      ("pp.frequency", 50.0),
+      ("pp.finish_threshold", 0.3),
+      ("pp.exceed_threshold", 4.0),
+      ("pp.distance_lookahead", 0.6),
+      ("pp.min_speed", 0.5),
+      ("pp.car_length", 0.33),
+
+      ("mpc.car_width", 0.15),
+      ("mpc.collision_w", 1e5),
+      ("mpc.error_w", 1.0),
+      ("mpc.min_delta", -0.34),
+      ("mpc.max_delta", 0.34),
+      ("mpc.K", 2),
+      ("mpc.T", 1),
+      ("mpc.frequency", 50.0),
+      ("mpc.finish_threshold", 0.3),
+      ("mpc.exceed_threshold", 4.0),
+      ("mpc.distance_lookahead", 0.6),
+      ("mpc.min_speed", 0.5),
+      ("mpc.car_length", 0.33),
+
+      ("motion_params.vel_std", 0.0),
+      ("motion_params.delta_std", 0.0),
+      ("motion_params.x_std", 0.0),
+      ("motion_params.y_std", 0.0),
+      ("motion_params.theta_std", 0.0),
   ]
+
   for name, default in defaults:
-    if not node.has_parameter(name):
-      node.declare_parameter(name, default)
+    declare_if_needed(node, name, default)
 
   base_params = {
       "car_length": float(node.get_parameter("car_length").value),
@@ -302,44 +324,48 @@ def get_ros_params(node):
 
   if controller_type == "pid":
     params = {
-        "kp": float(node.get_parameter_or("pid.kp", 0.5)),
-        "kd": float(node.get_parameter_or("pid.kd", 0.5)),
+        "kp": float(node.get_parameter("pid.kp").value),
+        "kd": float(node.get_parameter("pid.kd").value),
     }
+
   elif controller_type == "pp":
     params = {
-        "frequency": float(node.get_parameter_or("pp.frequency", base_params["frequency"])),
-        "finish_threshold": float(node.get_parameter_or("pp.finish_threshold", base_params["finish_threshold"])),
-        "exceed_threshold": float(node.get_parameter_or("pp.exceed_threshold", base_params["exceed_threshold"])),
-        "distance_lookahead": float(node.get_parameter_or("pp.distance_lookahead", base_params["distance_lookahead"])),
-        "min_speed": float(node.get_parameter_or("pp.min_speed", base_params["min_speed"])),
-        "car_length": float(node.get_parameter_or("pp.car_length", base_params["car_length"])),
+        "frequency": float(node.get_parameter("pp.frequency").value),
+        "finish_threshold": float(node.get_parameter("pp.finish_threshold").value),
+        "exceed_threshold": float(node.get_parameter("pp.exceed_threshold").value),
+        "distance_lookahead": float(node.get_parameter("pp.distance_lookahead").value),
+        "min_speed": float(node.get_parameter("pp.min_speed").value),
+        "car_length": float(node.get_parameter("pp.car_length").value),
     }
+
   elif controller_type == "mpc":
     params = {
-        "car_width": float(node.get_parameter_or("mpc.car_width", 0.15)),
-        "collision_w": float(node.get_parameter_or("mpc.collision_w", 1e5)),
-        "error_w": float(node.get_parameter_or("mpc.error_w", 1.0)),
-        "min_delta": float(node.get_parameter_or("mpc.min_delta", -0.34)),
-        "max_delta": float(node.get_parameter_or("mpc.max_delta", 0.34)),
-        "K": int(node.get_parameter_or("mpc.K", 2)),
-        "T": int(node.get_parameter_or("mpc.T", 1)),
-        "frequency": float(node.get_parameter_or("mpc.frequency", base_params["frequency"])),
-        "finish_threshold": float(node.get_parameter_or("mpc.finish_threshold", base_params["finish_threshold"])),
-        "exceed_threshold": float(node.get_parameter_or("mpc.exceed_threshold", base_params["exceed_threshold"])),
-        "distance_lookahead": float(node.get_parameter_or("mpc.distance_lookahead", base_params["distance_lookahead"])),
-        "min_speed": float(node.get_parameter_or("mpc.min_speed", base_params["min_speed"])),
-        "car_length": float(node.get_parameter_or("mpc.car_length", base_params["car_length"])),
+        "car_width": float(node.get_parameter("mpc.car_width").value),
+        "collision_w": float(node.get_parameter("mpc.collision_w").value),
+        "error_w": float(node.get_parameter("mpc.error_w").value),
+        "min_delta": float(node.get_parameter("mpc.min_delta").value),
+        "max_delta": float(node.get_parameter("mpc.max_delta").value),
+        "K": int(node.get_parameter("mpc.K").value),
+        "T": int(node.get_parameter("mpc.T").value),
+        "frequency": float(node.get_parameter("mpc.frequency").value),
+        "finish_threshold": float(node.get_parameter("mpc.finish_threshold").value),
+        "exceed_threshold": float(node.get_parameter("mpc.exceed_threshold").value),
+        "distance_lookahead": float(node.get_parameter("mpc.distance_lookahead").value),
+        "min_speed": float(node.get_parameter("mpc.min_speed").value),
+        "car_length": float(node.get_parameter("mpc.car_length").value),
         "kinematics_params": {
-            "vel_std": float(node.get_parameter_or("motion_params.vel_std", 0.0)),
-            "delta_std": float(node.get_parameter_or("motion_params.delta_std", 0.0)),
-            "x_std": float(node.get_parameter_or("motion_params.x_std", 0.0)),
-            "y_std": float(node.get_parameter_or("motion_params.y_std", 0.0)),
-            "theta_std": float(node.get_parameter_or("motion_params.theta_std", 0.0)),
+            "vel_std": float(node.get_parameter("motion_params.vel_std").value),
+            "delta_std": float(node.get_parameter("motion_params.delta_std").value),
+            "x_std": float(node.get_parameter("motion_params.x_std").value),
+            "y_std": float(node.get_parameter("motion_params.y_std").value),
+            "theta_std": float(node.get_parameter("motion_params.theta_std").value),
         },
     }
+
     permissible_region, map_info = utils.get_map("/static_map")
     params["permissible_region"] = permissible_region
     params["map_info"] = map_info
+
   else:
     raise RuntimeError(
         f"'{controller_type}' is not a controller. You must specify 'pid', 'pp', or 'mpc'"
