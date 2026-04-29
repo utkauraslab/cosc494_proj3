@@ -19,12 +19,19 @@ def main(args=None):
 
   node.start()
 
+  executor = MultiThreadedExecutor()
+  executor.add_node(node)
+  executor.add_node(controller)
+  
   try:
-    rclpy.spin(node)
+      executor.spin()
   except KeyboardInterrupt:
-    pass
+      pass
   finally:
-    node.shutdown()
-    controller.destroy_node()
-    node.destroy_node()
-    rclpy.shutdown()
+      node.shutdown()
+      executor.remove_node(node)
+      executor.remove_node(controller)
+  
+      node.destroy_node()
+      controller.destroy_node()
+      rclpy.shutdown()
